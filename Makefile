@@ -7,6 +7,7 @@ ifeq ($(UNAME),Darwin)
 	FLAGS=-Wall -Werror -Wextra -Wpedantic -Os
 	# FLAGS:=$(FLAGS) -fsanitize=undefined
 	# FLAGS:=$(FLAGS) -fsanitize=address
+	OPEN=open
 endif
 ifeq ($(UNAME),Linux)
 	COMPILER=gcc
@@ -17,6 +18,7 @@ ifeq ($(UNAME),Linux)
 	# -Wno-misleading-indentation silences warnings which are entirely spurious.
 	# -Wno-format-truncation likewise silences spurious warnings regarding snprintf() truncation.
 	FLAGS:=$(FLAGS) -Wno-misleading-indentation -Wno-format-truncation
+	OPEN=xdg-open
 endif
 
 resources:
@@ -59,7 +61,7 @@ rundecker: decker
 .PHONY: jsres
 js: jsres
 	@mkdir -p js/build/
-	@echo "VERSION=\"${VERSION}\"\n" > js/build/lilt.js
+	@echo "VERSION=\"${VERSION}\"" > js/build/lilt.js
 	@cat js/lil.js js/repl.js >> js/build/lilt.js
 
 testjs: js
@@ -68,10 +70,20 @@ testjs: js
 	@node js/build/lilt.js tests/dom/domtests.lil
 	@node js/build/lilt.js tests/dom/test_roundtrip.lil
 
-web-decker: js
+js-build: js
 	@chmod +x ./scripts/web_decker.sh
 	@./scripts/web_decker.sh examples/decks/tour.deck js/build/decker.html $(VERSION)
-	open js/build/decker.html
+	${OPEN} js/build/decker.html
+
+web-decker: js-build
+	${OPEN} js/build/decker.html
+
+docker: js-build
+	docker build -t decker .
+
+docker-run: docker
+	docker run -it --rm -d -p 8081:80 --name web decker
+	${OPEN} http://localhost:8081
 
 .PHONY: docs
 docs:

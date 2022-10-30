@@ -44,6 +44,29 @@ brew install multimarkdown
 make docs
 ```
 
+Docker
+------
+
+If you have Docker installed, simply run
+
+```
+make docker
+```
+
+to build the image (default name is `decker`). To run it as a Docker container, run
+
+```
+make docker-run
+```
+
+which will start a container instance and open your browser to the correct URL. To push the image to [Docker Hub] do
+
+```
+docker login # then input your username/password
+docker tag decker <your_docker_id>/docker
+docker push <your_docker_id>/docker
+```
+
 Contributing
 ------------
 The Decker project is released under the MIT license. Any contributions to this repository are understood to fall under the same license.
